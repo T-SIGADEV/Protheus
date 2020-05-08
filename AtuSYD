@@ -1,0 +1,182 @@
+//-------------------------------------------------------------------
+/*/{Protheus.doc} AtuSYD
+Definição do modelo de Dados
+
+@author marcio.rodrigo
+@since 29/12/2019
+@version 1.0
+@param 
+@type function
+/*/
+//-------------------------------------------------------------------
+User Function AtuSYD()
+Local nTimeOut	:= 20
+Local cRet		:= ""
+Local aDados	:= {}
+Local aTemp		:= {}
+Local _nX		:= 0
+Local nPosNCM	:= 0
+Local nPosUnid	:= 0
+Local nPosDesc	:= 0
+Local cNCM		:= ""
+Local cUn		:= ""
+Local cDescri	:= ""
+Local cFilSYD	:= ""
+Local nCount	:= 0
+
+	RpcClearEnv()	//LIMPA O AMBIENTE
+	RpcSetEnv("01", "01", , , "COM", , {"CLK","SYD"})
+
+	cFilSYD	:= xFilial("SYD")
+
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Conectando tabela NCM")
+
+	cRet := HttpGet('http://www.mdic.gov.br/balanca/bd/tabelas/NCM.csv', /*[cGetParms]*/, nTimeOut, /*[aHeadStr]*/, /*[@cHeaderGet]*/)
+	If(cRet == Nil)
+		ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Nao foi possivel conectar no site")
+		RpcClearEnv()	//LIMPA O AMBIENTE
+		Return(Nil)
+	EndIf
+
+
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] HttpGet Finalizado")
+
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Removendo caracteres especiais")
+	cRet := StrTran(cRet, " ", " ")
+	cRet := StrTran(cRet, "”", " ")
+	cRet := StrTran(cRet, "“", " ")
+	cRet := StrTran(cRet, "°", " ")
+	cRet := StrTran(cRet, 'º', '')
+
+
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Removendo aspas duplas")
+	cRet := StrTran(cRet, '""', '')
+
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Removendo quebra de linha")
+	cRet := StrTran(cRet, CRLF, '')
+
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Convertendo 1o vetor (StrToArray)")
+	aTemp := StrToArray(cRet, '""')
+
+	cRet  := ""
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] StrToArray 1 Finalizado")
+
+	For _nX := 1 to Len(aTemp)
+		aAdd(aDados, StrToArray(aTemp[_nX], '";"'))
+	Next _nX
+
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Finalizada conexao tabela NCM")
+	ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Atualizando tabela NCM TOTVS (SYD)")
+
+	nPosNCM		:= aScan(aDados[01], {|x| StrTran(x, '"', '') == 'CO_NCM'})
+	nPosUnid	:= aScan(aDados[01], {|x| StrTran(x, '"', '') == 'CO_UNID'})
+	nPosDesc	:= aScan(aDados[01], {|x| StrTran(x, '"', '') == 'NO_NCM_POR'})
+
+	For _nX := 2 to Len(aDados)
+		cNCM := StrTran(aDados[_nX][nPosNCM], '"', '')
+		cNCM := PadL(cNCM, 8, "0")
+
+		SYD->(dbGoTop())
+		If(!SYD->(dbSeek(cFilSYD + cNCM)))
+			nCount	+= 1
+			cUn		:= StrTran(aDados[_nX][nPosUnid], '"', '')
+			cDescri	:= StrTran(aDados[_nX][nPosDesc], '"', '')
+			cDescri	:= UPPER(cDescri)
+			cDescri	:= NoAcento(cDescri)
+			cDescri	:= FwNoAccent(cDescri)
+			cDescri	:= FwCutOff(cDescri, .T.)
+			cDescri	:= RmvAcento(cDescri)
+
+			RecLock("SYD", .T.)
+				Replace YD_FILIAL With cFilSYD
+				Replace YD_TEC    With cNCM
+				Replace YD_DESC_P With cDescri
+				Replace YD_UNID   With cUn
+			MsUnLock()
+		EndIf
+	Next _nX
+
+	If(nCount == 0)
+		ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Nao foram incluidos registros na tabela de NCM (SYD)")
+	Else
+		ConOut("[AtuSYD" + " - " + FWTimeStamp(3) + "] Foram incluidos " + cValToChar(nCount) + " registros na tabela de NCM (SYD)")
+	EndIf
+
+	RpcClearEnv()	//LIMPA O AMBIENTE
+
+Return(Nil)
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} RmvAcento
+Definição do modelo de Dados
+
+@author marcio.rodrigo
+@since 29/12/2019
+@version 1.0
+@param 
+@type function
+/*/
+//-------------------------------------------------------------------
+Static Function RmvAcento(cString)
+Local cReturn	:= cString
+
+	//-------------------------------------------------------------------
+	//
+	//-------------------------------------------------------------------
+	If(DecodeUTF8(cReturn, "cp1252") <> Nil)
+		cReturn := DecodeUTF8(cReturn, "cp1252")
+	Else
+		cTeste := ""
+	EndIf
+
+	//-------------------------------------------------------------------
+	//
+	//-------------------------------------------------------------------
+	cReturn := NoAcento(cReturn)
+	cReturn := FwNoAccent(cReturn)
+	cReturn := FwCutOff(cReturn, .T.)
+	cReturn := StrTran(cReturn, CRLF, "")
+	cReturn := StrTran(cReturn, TAB, "")
+	cReturn := StrTran(cReturn, Chr(13) + Chr(10), "")
+	cReturn := StrTran(cReturn, Chr(13), "")
+	cReturn := StrTran(cReturn, Chr(09), "")
+
+	//-------------------------------------------------------------------
+	//RETIRANDO CARACTERES
+	//-------------------------------------------------------------------
+	cReturn := StrTran(cReturn, "'", "")
+	cReturn := StrTran(cReturn, " ", "")
+	cReturn := StrTran(cReturn, "#", "")
+	cReturn := StrTran(cReturn, "%", "")
+	cReturn := StrTran(cReturn, "*", "")
+	cReturn := StrTran(cReturn, "&", "E")
+	cReturn := StrTran(cReturn, ">", "")
+	cReturn := StrTran(cReturn, "<", "")
+	cReturn := StrTran(cReturn, "!", "")
+	cReturn := StrTran(cReturn, "@", "")
+	cReturn := StrTran(cReturn, "$", "")
+	cReturn := StrTran(cReturn, "(", "")
+	cReturn := StrTran(cReturn, ")", "")
+	cReturn := StrTran(cReturn, "_", "")
+	cReturn := StrTran(cReturn, "=", "")
+	cReturn := StrTran(cReturn, "+", "")
+	cReturn := StrTran(cReturn, "{", "")
+	cReturn := StrTran(cReturn, "}", "")
+	cReturn := StrTran(cReturn, "[", "")
+	cReturn := StrTran(cReturn, "]", "")
+	cReturn := StrTran(cReturn, "/", "")
+	cReturn := StrTran(cReturn, "?", "")
+	cReturn := StrTran(cReturn, ".", "")
+	cReturn := StrTran(cReturn, "\", "")
+	cReturn := StrTran(cReturn, "|", "")
+	cReturn := StrTran(cReturn, ":", "")
+	cReturn := StrTran(cReturn, ";", "")
+	cReturn := StrTran(cReturn, '"', '')
+	cReturn := StrTran(cReturn, '°', '')
+	cReturn := StrTran(cReturn, 'ª', '')
+	cReturn := StrTran(cReturn, ' ', '')
+	cReturn := StrTran(cReturn, '”', '')
+	cReturn := StrTran(cReturn, '“', '')
+	cReturn := StrTran(cReturn, 'º', '')
+
+Return(cReturn)
