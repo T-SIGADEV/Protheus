@@ -1,0 +1,451 @@
+#INCLUDE "TBICONN.CH"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TCBROWSE.CH"
+#INCLUDE "TOTVS.CH"
+#INCLUDE "RESTFUL.CH"
+
+#DEFINE CRLF Chr(13)+Chr(10)
+#DEFINE TAB  Chr(09)
+#DEFINE BOT_TELEGRAM  "botXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"	//POE AQUI SEU BOT
+
+//Voce deve criar um job sempre ativo com a função TELEGRAM, insira seu codigo de bot acima e ele ira responder algumas funções de teste
+
+User Function TELEGRAM(aParam)
+
+	//|*******************************************************|\\
+	//|********************** Variaveis **********************|\\
+	//|*******************************************************|\\	
+	Local cTime			:= Time()
+	Private cThreadId 	:= Alltrim(Str(ThreadId(),8,0))
+	Default aParam := {"99","01"}
+	//|*******************************************************|\\
+	//|********************** Variaveis **********************|\\
+	//|*******************************************************|\\
+
+
+
+
+
+	//|*******************************************************|\\
+	//|******************* Abre o ambiente *******************|\\
+	//|*******************************************************|\\		
+	conout("************************************************************")
+	conout("* Telegram EM EXECUCAO ["+cThreadId+"]")
+	
+	RPCClearEnv()
+	RPCSetType(3)
+	RPCSetEnv(aParam[1],aParam[2],"","","EST",,{}) 
+	
+	if Select("SM0") == 0 //.or. Select("SM2") == 0
+		conOut("* Telegram FINALIZADO ["+cThreadId+"] (Ambiente nÃ£o configurado) ")
+		RPCClearEnv()
+		Return nil
+	endif
+	
+	if ! LockByName("Telegram", .F., .F.)  // SemÃ¡foro, caso job esteja em execuÃ§Ã£o finaliza esta chamada
+		conOut("* Telegram FINALIZADO ["+cThreadId+"] (Outra thread em execucao) ")
+		RPCClearEnv()
+		Return nil
+	endif 
+
+	Set(_SET_DATEFORMAT, "dd/mm/yyyy")
+	
+	conout("* Telegram Data............: " + dtoc(date()) )
+	conout("* Telegram Hora............: " + cTime )
+	conout("* Telegram Environment.....: " + GetEnvServer() )
+	conout("* Telegram Thread ID ......: " + cThreadId )
+	conout("* Telegram Usuario.........: " + alltrim(upper(UsrRetName(RetCodUsr()))) )
+	//|*******************************************************|\\
+	//|******************* Abre o ambiente *******************|\\
+	//|*******************************************************|\\
+
+
+
+
+
+	//|*******************************************************|\\
+	//|*********************** PROCESSO **********************|\\
+	//|*******************************************************|\\
+	//criar tabela
+	Criadb()
+	
+	while .T.
+		conout("* Telegram ["+cThreadId+"] EXECUTANDO")
+		//ler mensagens (atualiar tabela com as mensagens recebidas)
+		RecTeleg()
+		//responder mensagens não respondidas (definir se iremos responder sempre a ultima ou todas)
+		Responde()
+		//esperar alguns milisegundos para executar novamente
+		Sleep( 10000 )
+	enddo
+	//|*******************************************************|\\
+	//|*********************** PROCESSO **********************|\\
+	//|*******************************************************|\\
+
+
+
+
+
+	//|*******************************************************|\\
+	//|******************* Fecha o ambiente ******************|\\
+	//|*******************************************************|\\	
+	UnLockByName("Telegram", .F. , .F.) 
+	dbCommitAll()
+	//dbUnLockAll()
+	DbCloseAll()
+	RPCClearEnv()
+	conout("* Telegram DEMOROU ["+ElapTime(cTime,Time())+"]")
+	conout("* Telegram FINALIZADO ["+cThreadId+"]")
+	conout("************************************************************")
+	//|*******************************************************|\\
+	//|******************* Fecha o ambiente ******************|\\
+	//|*******************************************************|\\	
+
+Return(Nil)
+
+Static Function RecTeleg()
+
+	Local oRestClient	:= Nil
+	Local cLink			:= "https://api.telegram.org/"
+	Local cUrl			:= BOT_TELEGRAM + "/getUpdates"
+	Local aHeader		:= {}
+	Local strJson		:= ""
+	Local oJson			:= JsonObject():New()
+	Local _nX			:= 0
+	Local cFirstName	:= ""
+	Local cLanguage		:= ""
+	Local cLastName		:= ""
+	Local cMsgType		:= ""
+	Local lIsBot		:= .F.
+	Local nDate			:= 0
+	Local nChtID		:= 0
+	Local nMsgID		:= 0
+	Local nText			:= 0
+	Local nUpdateID 	:= 0
+
+	oRestClient	:= FWRest():New(cLink)
+	If(!oRestClient:GetChkStatus())
+		Return(.F.)
+	EndIf
+
+	oRestClient:setPath(cUrl)
+
+	If !oRestClient:Get(aHeader)
+		CONOUT( oRestClient:GetLastError() + CRLF + oRestClient:cResult )
+		Return(.F.)
+	EndIf
+
+	If(oRestClient:oResponseH:cStatusCode == "200")
+
+		strJson	:= oRestClient:GetResult()
+
+		If(Len(strJson) <= 0)
+			Return(.F.)
+		EndIf
+
+		oJson:fromJson(strJson)
+
+		If(oJson:GetJsonObject("ok") <> .T.)
+			Return(.F.)
+		EndIf
+
+		For _nX := 1 to Len(oJson:GetJsonObject("result"))
+			nMsgID		:= 0
+			nDate		:= 0
+			nText		:= ""
+			nChtID		:= 0
+			lIsBot		:= .F.
+			cFirstName	:= ""
+			cLastName	:= ""
+			cLanguage	:= ""
+			cMsgType	:= ""
+			If(ValType(oJson:GetJsonObject("result")[_nX]) == "J")
+				nUpdateID := oJson:GetJsonObject("result")[_nX]:GetJsonObject("update_id")
+				If(ValType(oJson:GetJsonObject("result")[_nX]:GetJsonObject("message")) == "J")
+					nMsgID	:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("message_id")
+					nDate	:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("date")
+					nText	:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("text")
+
+					If(ValType(oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("from")) == "J")
+						nChtID		:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("from"):GetJsonObject("id")
+						lIsBot		:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("from"):GetJsonObject("is_bot")
+						cFirstName	:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("from"):GetJsonObject("first_name")
+						cLastName	:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("from"):GetJsonObject("last_name")
+					EndIf
+					If(ValType(oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("chat")) == "J")
+						nChtID		:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("chat"):GetJsonObject("id")
+						cFirstName	:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("chat"):GetJsonObject("first_name")
+						cLastName	:= oJson:GetJsonObject("result")[_nX]:GetJsonObject("message"):GetJsonObject("chat"):GetJsonObject("last_name")
+					EndIf
+				EndIf
+			EndIf
+			nChtID := PADR(Alltrim(cValTochar(nChtID)),20)
+			nMsgID := StrZero(nMsgID,20)
+			TELEGRAM->(dbSetOrder(1))
+			if !TELEGRAM->(dbSeek(nMsgID+nChtID))//MSGID+CHTID
+				RecLock("TELEGRAM",.T.)
+					Replace TELEGRAM->MSGID with nMsgID
+					Replace TELEGRAM->CHTID with nChtID
+					Replace TELEGRAM->STPDATA with nDate
+					Replace TELEGRAM->TEXTO with nText
+					Replace TELEGRAM->FNAME with cFirstName
+					Replace TELEGRAM->LNAME with cLastName
+					Replace TELEGRAM->STPRDATA with 0
+					Replace TELEGRAM->RTEXTO with ""
+				MsUnlock("TELEGRAM")
+			endif
+		Next _nX
+		FreeObj(oJson)
+	Else
+		Alert("Erro metodo GET")
+	EndIf
+
+	FreeObj(oRestClient)
+	FreeObj(oJson)
+	DelClassIntf()
+
+Return(.T.)
+
+Static Function Responde()
+
+	Local bRegra := "STPRDATA = 0 .OR. EMPTY(RTEXTO) "
+
+	TELEGRAM->(DBClearFilter())
+	TELEGRAM->( DBSetFilter( { || &bRegra } , bRegra ) )	
+	TELEGRAM->(dbSetOrder(1)) 
+	TELEGRAM->(dbGoTop())
+
+	while !(TELEGRAM->(EOF()))
+		Do Case
+			Case lower(Alltrim(TELEGRAM->TEXTO)) == "/status"
+				//Enviar o status do servidor
+				fAddServer(Alltrim(TELEGRAM->CHTID),TELEGRAM->(Recno()))
+			Case lower(Alltrim(TELEGRAM->TEXTO)) == "/start"
+				cMsg := "Bem vindo a integração Protheus com o Telegram"
+				EnvTeleg(Alltrim(TELEGRAM->CHTID), cMsg , TELEGRAM->(Recno()) )
+				cMsg := "Atualmente eu respondo aos seguintes comandos:"
+				EnvTeleg(Alltrim(TELEGRAM->CHTID), cMsg , TELEGRAM->(Recno()) )
+				cMsg := "/status (Retorna o status dos seeviços"
+				EnvTeleg(Alltrim(TELEGRAM->CHTID), cMsg , TELEGRAM->(Recno()) )
+			OtherWise
+				//Envia uma mensagem que não reconhece o texto recebido
+				cMsg := "Não reconheci o comando: '"+lower(Alltrim(TELEGRAM->TEXTO))+"'"
+				EnvTeleg(Alltrim(TELEGRAM->CHTID), cMsg , TELEGRAM->(Recno()) )
+		End Case
+		TELEGRAM->(dbSkip())
+	endDo
+
+	TELEGRAM->(DBClearFilter())
+	TELEGRAM->(dbSetOrder(1)) 
+	TELEGRAM->(dbGoTop()) 
+
+Return
+
+Static Function EnvTeleg(cChatId, cMsg, cRecLog)
+
+	Local oRestClient	:= Nil
+	Local cLink			:= "https://api.telegram.org/"
+	Local cUrl			:= ""
+	Local aHeader		:= {}
+	Local oJson			:= JsonObject():New()
+
+	Set(_SET_DATEFORMAT, "dd/mm/yyyy")
+
+	oRestClient	:= FWRest():New(cLink)
+	If(!oRestClient:GetChkStatus())
+		Return(.f.)
+	EndIf
+
+	cUrl := BOT_TELEGRAM + "/sendMessage?parse_mode=html&use_aliases=true&chat_id=" + cChatId + "&text=" + EncodeUtf8(cMsg)
+	oRestClient:setPath(cUrl)
+
+	If !oRestClient:Get(aHeader)
+		conout( oRestClient:GetLastError() + CRLF + oRestClient:cResult )
+		Return(.f.)
+	EndIf
+
+	If(oRestClient:oResponseH:cStatusCode == "200")
+
+		strJson	:= oRestClient:GetResult()
+
+		If(Len(strJson) <= 0)
+			Return(.f.)
+		EndIf
+
+		oJson:fromJson(strJson)
+
+		If(oJson:GetJsonObject("ok") <> .T.)
+			Return(.f.)
+		EndIf
+
+		TELEGRAM->(dbGoTo(cRecLog))
+		RecLock("TELEGRAM",.F.)
+			Replace TELEGRAM->STPRDATA with val(FWTimeStamp(4))
+			Replace TELEGRAM->RTEXTO with Alltrim(Alltrim(TELEGRAM->RTEXTO) + " " + cMsg)
+		MsUnlock("TELEGRAM")
+
+		/*
+		//Le o json de retorno
+		If(ValType(oJson:GetJsonObject("result")) == "J")
+			nMessageID	:= oJson:GetJsonObject("result"):GetJsonObject("message_id")
+			nDate		:= oJson:GetJsonObject("result"):GetJsonObject("date")
+			nText  		:= oJson:GetJsonObject("result"):GetJsonObject("text")
+			ConvTmpStp(nDate)
+
+			If(ValType(oJson:GetJsonObject("result"):GetJsonObject("from")) == "J")
+				nID			:= oJson:GetJsonObject("result"):GetJsonObject("from"):GetJsonObject("id")
+				lIsBot		:= oJson:GetJsonObject("result"):GetJsonObject("from"):GetJsonObject("is_bot")
+				cFirstName	:= oJson:GetJsonObject("result"):GetJsonObject("from"):GetJsonObject("first_name")
+				cLastName	:= oJson:GetJsonObject("result"):GetJsonObject("from"):GetJsonObject("last_name")
+				cUserName	:= oJson:GetJsonObject("result"):GetJsonObject("from"):GetJsonObject("username")
+			EndIf
+			If(ValType(oJson:GetJsonObject("result"):GetJsonObject("chat")) == "J")
+				nID			:= oJson:GetJsonObject("result"):GetJsonObject("chat"):GetJsonObject("id")
+				cFirstName	:= oJson:GetJsonObject("result"):GetJsonObject("chat"):GetJsonObject("first_name")
+				cLastName	:= oJson:GetJsonObject("result"):GetJsonObject("chat"):GetJsonObject("last_name")
+				cMsgType	:= oJson:GetJsonObject("result"):GetJsonObject("chat"):GetJsonObject("type")
+			EndIf
+		EndIf
+		*/
+		FreeObj(oJson)
+	Else
+		Alert("Erro metodo GET")
+	EndIf
+
+	FreeObj(oRestClient)
+	FreeObj(oJson)
+	DelClassIntf()
+
+Return(.T.)
+
+
+Static Function fAddServer(cChatId,cRecLog)
+
+	Local nIdy
+	Local aServers := {}
+	Local cRet := ""
+	aadd(aServers, { "localhost",1237,"MP12125LOCAL"    ,"Local"     ,"99","01"})
+	aadd(aServers, { "localhost",1235,"MP12125PW"       ,"INN web"     ,"99","01"})
+
+	//cRet += "<table>
+	//cRet += "<tr><td>Servidores</td><td>thread</td></tr>"
+
+	For nIdy := 1 to len(aServers)
+
+		oSrv := rpcconnect( aServers[nIdy,1], aServers[nIdy,2], aServers[nIdy,3], aServers[nIdy,5], aServers[nIdy,6] )
+		if valtype(oSrv) == "O"
+			oSrv:callproc("RPCSetType", 3)
+			aInfo  := oSrv:callproc("GetUserInfoArray") // chama a funcao remotamente no server, retornando a lista de usuarios conectados
+
+			//cRet += "<tr><td>"+aServers[nIdy][4]+"</td><td>"+cValToChar(Len(aInfo))+"</td></tr>"
+
+			//U_EnvTeleg(cChatId, "<b>Server:</b> "+aServers[nIdy][4]+" <b>Threads:</b> "+cValToChar(Len(aInfo)))
+			EnvTeleg(Alltrim(TELEGRAM->CHTID), "<b>Server:</b> "+aServers[nIdy][4]+" <b>Threads:</b> "+cValToChar(Len(aInfo))  , TELEGRAM->(Recno()) )
+
+			oSrv:callproc("RpcClearEnv")
+			rpcdisconnect(oSrv)
+		endif
+	Next nIdy
+
+	//cRet += "</table>
+
+Return(cRet)
+
+
+Static Function Criadb()
+
+	Local cReposit := ""
+	Local cDriver  := ""//__cRDD
+	Local cFile    := ""
+	Local lReOpen  := .F.
+	//Local lRet     := .T.
+	Local aStru    := {}	
+	Local nY       := 0
+	Local nX       := 0
+	Local aIndex   := {}
+	Local cQUpdate
+	//Local aUniquege
+	Local aTabelas	:= {}
+	
+	cDriver  := __cRDD
+	
+	aadd(aTabelas,{"TELEGRAM",{},{},{}})
+	nY := Len(aTabelas)
+	Aadd(aTabelas[nY][2],{"MSGID"	,"C",020,0})//nMsgID
+	Aadd(aTabelas[nY][2],{"CHTID"	,"C",020,0})//nChtID
+	Aadd(aTabelas[nY][2],{"STPDATA"	,"N",018,0})//nDate
+	Aadd(aTabelas[nY][2],{"TEXTO"	,"C",250,0})//nText
+	Aadd(aTabelas[nY][2],{"FNAME"	,"C",050,0})//cFirstName
+	Aadd(aTabelas[nY][2],{"LNAME"	,"C",050,0})//cLastName
+	Aadd(aTabelas[nY][2],{"STPRDATA","N",018,0})//nData - Resposta
+	Aadd(aTabelas[nY][2],{"RTEXTO"	,"C",250,0})//nText - Resposta
+	Aadd(aTabelas[nY][3],"MSGID+CHTID")
+
+	For nY := 1 To Len(aTabelas)
+			
+		cReposit := aTabelas[nY][1]
+		aStru    := aTabelas[nY][2]
+		aIndex	 := aTabelas[nY][3]
+		aUnique	 := aTabelas[nY][4]
+	
+		if Select(cReposit) == 0
+	
+			cFile    := RetArq(cDriver,cReposit,.T.)	
+			
+			If !MsFile(cFile,,cDriver)
+				DbCreate(cReposit,aStru,cDriver)
+				if len(aUnique) > 0
+					If UPPER(AllTrim(TcGetDb())) == "MSSQL"
+						aadd(aUnique,"R_E_C_D_E_L_")
+						cQUpdate := ""
+						for nX := 1 To Len(aUnique)
+							cQUpdate += iif(!Empty(cQUpdate),", ","")
+							cQUpdate += " ["+aUnique[nX]+"] ASC "
+						next nX
+						cQUpdate := " CREATE UNIQUE NONCLUSTERED INDEX ["+cReposit+"_UNQ] ON [dbo].["+cReposit+"] ("+cQUpdate+") "
+						cQUpdate += " WITH (	PAD_INDEX = OFF, "
+						cQUpdate += "           STATISTICS_NORECOMPUTE = OFF, "
+						cQUpdate += "           SORT_IN_TEMPDB = OFF, "
+						cQUpdate += "           IGNORE_DUP_KEY = OFF, "
+						cQUpdate += "           DROP_EXISTING = OFF, "
+						cQUpdate += "           ONLINE = OFF, "
+						cQUpdate += "           ALLOW_ROW_LOCKS = ON, "
+						cQUpdate += "           ALLOW_PAGE_LOCKS = ON) "
+						cQUpdate += " ON [PRIMARY]"
+						nRet := TCSqlExec(cQUpdate)
+						If nRet != 0
+							UserException( TcSqlError() )
+						EndIf
+					EndIf
+				endif
+			EndIf
+			
+			If MsOpenDbf(.T.,cDriver,cFile,cReposit,.T.,.F.,.F.,.F.) //MsOpEndbf(lNewArea,cDriver,cArquivo,cAlias,lShared,lReadOnly,lHelp,lQuit)
+
+				DbSelectArea(cReposit)
+				
+				for nX := 1 To Len(aIndex)
+				
+					lReOpen := !MsFile(cFile,cFile+cValToChar(nX),cDriver)
+					cIndex  := cReposit+cValToChar(nX)
+					MsOpenIdx(cIndex,aIndex[nX],.T.,.F.,,cFile)//cIndice,cChave,lUnique,lMensagem,oAction,cArquivo,nLin,nCol
+				
+					If lReOpen
+						DbCloseArea()
+						MsOpenDbf(.T.,cDriver,cFile,cReposit,.T.,.F.,.F.,.F.)
+						DbSelectArea(cReposit)
+						cIndex  := cReposit+cValToChar(nX)
+						MsOpenIdx(cIndex,aIndex[nX],.T.,.F.,,cFile)
+					EndIf
+					
+				Next nX
+				
+				DbSetOrder(1)
+				
+			EndIf
+			
+		endif
+		
+	next nY
+
+Return
