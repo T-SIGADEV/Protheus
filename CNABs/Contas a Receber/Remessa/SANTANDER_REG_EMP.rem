@@ -1,0 +1,70 @@
+COD.REGISTRO   001001 0                                                           
+COD.REMESSA    002002 1                                                           
+LITERAL REMESSA003009 "REMESSA"                                                   
+COD.SERVICO    010011 01                                                          
+LITERAL SERVICO012026 "COBRANCA"                                                  
+AGENCIA SEM DV 027030 PADR(SEE->EE_AGENCIA,4)                                     
+IDEN.CEDENT PSK031038 PADR(SEE->EE_CODEMP,8)                                      
+BRANCOS        039046 PADR(SEE->EE_CONTA,8)                                       
+NOME EMPRESA   047076 Substr(SM0->M0_NOME,1,30)                                   
+NUMERO BCO     077079 033                                                         
+NOME DO BANCO  080094 "SANTANDER"                                                 
+DT.GRAVACAO    095100 GRAVADATA(dDATABASE,.F.)                                    
+ZEROS          101116 "0000000000000000"                                          
+BRANCOS        117391 SPACE(275)                                                  
+NUM.SEQ.ARQ    392394 STRZERO(VAL(SEE->EE_ULTDSK),3)                              
+NUMERO SEQ.    395400 000001                                                      
+Codigo Registro0010010"1"                                                         
+Codigo Inscr   0020030"02"                                                        
+Numero Inscr   0040170"59717553000102"                                            
+Cod.Agenc.Ceden018021 PADR(SEE->EE_AGENCIA,4)                                     
+Cta.Movto.Ceden022029 PADR(SEE->EE_CODEMP,8)                                      
+Cta.Cobr.Cedent030037 PADR(SEE->EE_CONTA,8)                                       
+Uso Empresa    038062 SE1->E1_PREFIXO+Left(SE1->E1_NUM,9)+SE1->E1_PARCELA         
+Nosso Numero   063070 SE1->E1_NUMBCO                                              
+Dt.Segundo Desc071076 "000000"                                                    
+Branco         077077                                                             
+Inform.Multa   078078 0                                                           
+% Multa Atraso 07908200                                                           
+Moeda Corrente 083084 "00"                                                        
+Vlr.Tit.Outr.Un08509700                                                           
+Brancos        098101 SPACE(4)                                                    
+Dt.Cobr.Multa  102107 "000000"                                                    
+Cod.da Certeira108108 "5"                                                         
+IDENT.OCORR    109110 "01"                                                        
+NUM.DOCUM      111120 SE1->E1_IDCNAB                                              
+DT.VENCTO      121126 GRAVADATA(SE1->E1_VENCREA,.F.)                              
+VALOR          1271390STRZERO((SE1->(E1_SALDO+E1_SDACRES-E1_SDDECRE)*100),13)     
+BCO.COBRANCA   140142 033                                                         
+AG.DEPOSITARIA 143147 00000                                                       
+ESPECIE TIT    148149 TABELA("17",SUBSTR(SE1->E1_TIPO,1,2))                       
+IDENTIFICACAO  150150 "N"                                                         
+DT.EMISSAO     151156 GRAVADATA(SE1->E1_EMISSAO,.F.)                              
+PRIM.INSTR     157158007                                                          
+SEG.INSTRUCAO  159160000                                                          
+VR.DIA ATRASO  1611730STRZERO((SE1->E1_VALJUR*100),13)                            
+DT.LIM.DESC    174179 GRAVADATA(SE1->E1_VENCREA,.F.)                              
+VALOR DESCONTO 18019200                                                           
+VALOR IOF      19320500                                                           
+VALOR ABAT.    20621800                                                           
+TIPO INSCR.SACA219220 IF(RIGHT(SA1->A1_CGC,2)='  ',01,02)                         
+INSCR.SACADO   221234 IF(RIGHT(SA1->A1_CGC,2)='  ','000','')+RTRIM(SA1->A1_CGC)   
+NOME SACADO    235274 SUBSTR(U_RetCharE(SA1->A1_NOME,1,1) ,1,37)                  
+ENDERECO SACADO275314 u_Ret_Desc(1)                                               
+BAIRRO SACADO  315326 u_Ret_Desc(5)                                               
+CEP SACADO     327334 PADR(SA1->(IF(A1_ENDCOB=" ",A1_CEP,A1_CEPCOB)),8)           
+MUN SACADO     335349 u_Ret_Desc(6)                                               
+UF SACADO      350351 u_Ret_Desc(7)                                               
+NOME SACADOR OU352381 SPACE(30)                                                   
+BRANCOS        382382                                                             
+IDENTIF.COMPLEM383383 "I"                                                         
+COMPLEMENTO    3843850SUBSTR(SEE->EE_CONTA,9,2)                                   
+BRANCOS        386391 SPACE(6)                                                    
+DIAS P/PROTESTO392393 00                                                          
+BRANCO         394394 SPACE(1)                                                    
+NUM.SEQ.REGISTR395400 incrementa()                                                
+COD.REGISTRO   001001 "9"                                                         
+QTD.DOCTOS.    0020070nSeq+1                                                      
+VL.TOTAL TITULO0080200SomaValor()                                                 
+ZEROS          0213940REPLICATE("0",374)                                          
+NR.SEQUENCIAL  395400 INCREMENTA()                                                

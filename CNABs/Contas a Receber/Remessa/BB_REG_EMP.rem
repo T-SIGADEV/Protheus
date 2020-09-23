@@ -1,0 +1,61 @@
+Codigo Registro00100100                                                           
+Codigo Remessa 00200201                                                           
+Literal Remessa0030090'REMESSA'                                                   
+Codigo Servico 010011001                                                          
+Literal Servico0120190'COBRANCA'                                                  
+Brancos        0200260                                                            
+Agencia e DV   0270310"19127"                                                     
+Conta e DV     0320400"004016661"                                                 
+Convenio       0410460SEE->EE_CODEMP                                              
+Nome da Empresa0470760SUBS(SM0->M0_NOME,1,30)                                     
+Nome do Banco  0770940'001BANCO DO BRASIL'                                        
+Data Gravacao  0951000GRAVADATA(dDATABASE,.F.)                                    
+Brancos        1011070IncRementa()                                                
+Intervalo      1083940                                                            
+Sequencial     3954000"000001"                                                    
+Codigo Registro00100101                                                           
+Codigo Inscr   002003002                                                          
+Numero CGC     0040170SM0->M0_CGC                                                 
+Agencia e DV   0180220"19127"                                                     
+Conta e DV     0230310"004016661"                                                 
+Convenio       0320370SEE->EE_CODEMP                                              
+Numero Titulo  0380620SE1->E1_PREFIXO+Left(SE1->E1_NUM,9)+SE1->E1_PARCELA         
+Nosso Numero   0630740SE1->E1_NUMBCO                                              
+               075076000                                                          
+               077078000                                                          
+Brancos        0790820                                                            
+Seu Numero     0830850                                                            
+Varicao        0861060'019000000000000002VIN'                                     
+Carteira       1071080"11"                                                        
+Registro titulo1091100"01"                                                        
+Numero Titulo  1111200SE1->E1_IDCNAB                                              
+Vencimento     1211260SE1->E1_VENCREA                                             
+Valor Titulo   1271390STRZERO((SE1->(E1_SALDO+E1_SDACRES-E1_SDDECRE)*100),13)     
+Banco          1401420'001'                                                       
+Convenio       1431470'00000'                                                     
+Especie Titulo 1481490"01"                                                        
+Aceite         1501500"N"                                                         
+Vencto Titulo  1511560SE1->E1_VENCREA                                             
+Inst. Codfi. 011571580IF(SA1->A1_CARTORI="N".Or.SE1->E1_TIPO="NDC",'00','01')     
+Inst. Codfi. 021591600'07'                                                        
+Juros Mora Dia 1611732STRZERO((SE1->E1_VALJUR*100),13)                            
+Data Descontos 1741790000000                                                      
+Valor Descontos1801920strzero(0,13)                                               
+Valor IOF      1932050strzero(0,13)                                               
+Valor Abatiment2062180strzero(0,13)                                               
+Tipo CGC / CPF 2192200if(right(SA1->A1_CGC,2)= '  ',01,02)                        
+CGC Do Cliente 2212340PADL(ALLTRIM(SA1->A1_CGC),14,"0")                           
+Nome Cliente   2352710Substr(SA1->A1_NOME,1,37)                                   
+brancos        2722740                                                            
+Endereco Sacado2753110PADR(IF(SA1->A1_ENDCOB=" ",SA1->A1_END,SA1->A1_ENDCOB),37)  
+Brancos        3123260                                                            
+cep            3273340IF(SA1->A1_ENDCOB=" ",SA1->A1_CEP,SA1->A1_CEPCOB)           
+Municipio      3353490IF(SA1->A1_ENDCOB=" ",SA1->A1_MUN,SA1->A1_MUNCOB)           
+Estado         3503510IF(SA1->A1_ENDCOB=" ",SA1->A1_EST,SA1->A1_ESTCOB)           
+Observacoes    3523910"Nota Fiscal "+SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA  
+Dias Protesto  3923930'00'                                                        
+Brancos        3943940                                                            
+Numero Seq.    3954000IncRementa()                                                
+Codigo Registro00100109                                                           
+Brancos        0023940                                                            
+Numero Sequenc 3954000Incrementa()                                                

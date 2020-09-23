@@ -1,0 +1,58 @@
+Codigo Registro0010010'0'                                                         
+Codigo Remessa 0020020'1'                                                         
+Literal Remessa0030090'REMESSA'                                                   
+Codigo Servico 0100110'01'                                                        
+Literal Servico0120260'COBRANCA'                                                  
+Codigo Agencia 0270320STRZERO(VAL(SEE->EE_AGENCIA),4)+'00'                        
+Conta Movimento0330380STRZERO(VAL(SEE->EE_CONTA),6)                               
+Brancos        0390460SPACE(8)                                                    
+Nome Cedente   0470760SM0->M0_NOMECOM                                             
+Codigo do Banco0770790SEE->EE_CODIGO                                              
+Nome do Banco  0800940'BANCO ITAU SA  '                                           
+Data Gravacao  0951000GRAVADATA(dDataBase,.F.)                                    
+Brancos        1013940SPACE(294)                                                  
+Num. Sequencial3954000'000001'                                                    
+Codigo Registro0010010'1'                                                         
+Tipo Inscricao 0020030'02'                                                        
+CGC Cedente    0040170SM0->M0_CGC                                                 
+Agencia Cedente0180230StrZero(Val(SEE->EE_AGENCIA),4)+'00'                        
+Conta Movimento0240290StrZero(Val(SEE->EE_CONTA),6)                               
+Brancos e Zeros0300370'    0000'                                                  
+Uso Cedente    0380620SE1->E1_PREFIXO+Left(SE1->E1_NUM,9)+SE1->E1_PARCELA         
+Nosso Numero   0630700StrZero(Val(SubStr(SE1->E1_NUMBCO,4,8)),8)                  
+Qtde. de Moeda 0710830Replicate('0',13)                                           
+No. da Carteira0840860SEE->EE_CODCART                                             
+Uso do Banco   0871070Space(21)                                                   
+Codigo Carteira1081080'I'                                                         
+Ocorrencia     1091100'01'                                                        
+Num Duplicata  1111200SE1->E1_IDCNAB                                              
+Data do Vencto 1211260GRAVADATA(SE1->E1_VENCREA,.F.)                              
+Valor Titulo   1271390StrZero((SE1->(E1_SALDO+E1_SDACRES-E1_SDDECRE)*100),13)     
+Banco Cobranca 1401420SEE->EE_CODIGO                                              
+Agencia Cobranc1431470'00000'                                                     
+Especie do Titu1481490'01'                                                        
+Aceite         1501500'N'                                                         
+Data Emissao   1511560GRAVADATA(SE1->E1_EMISSAO,.F.)                              
+1a. Instrucao  1571580"10"                                                        
+2a. Instrucao  1591600                                                            
+Vlr. Atraso Dia1611730StrZero((SE1->E1_VALJUR*100),13)                            
+Data Lim. Desc.1741790Replicate('0',6)                                            
+Vlr Desconto   1801920Replicate('0',13)                                           
+Vlr IOF        1932050Replicate('0',13)                                           
+Vlr Abatimento 2062180Replicate('0',13)                                           
+Tipo Inscricao 2192200If(Right(SA1->A1_CGC,2)= '  ',01,02)                        
+Numero Inscrica2212340PadL(AllTrim(SA1->A1_CGC),14,"0")                           
+Nome Sacado    2352740SubStr(SA1->A1_NOME,1,40)                                   
+Endereco Sacado2753140PadR(IF(SA1->A1_ENDCOB=" ",SA1->A1_END,SA1->A1_ENDCOB),37)  
+Bairro Sacado  3153260Space(03)                                                   
+CEP Sacado     3273340Iif(SA1->A1_ENDCOB=" ",SA1->A1_CEP,SA1->A1_CEPCOB)          
+Cidade Sacado  3353490Iif(SA1->A1_ENDCOB=" ",SA1->A1_MUN,SA1->A1_MUNCOB)          
+Estado Sacado  3503510Iif(SA1->A1_ENDCOB=" ",SA1->A1_EST,SA1->A1_ESTCOB)          
+Nome do Sacador3523850Space(34)                                                   
+Data de Mora   3863910GRAVADATA(SE1->E1_VENCREA,.F.)                              
+No.Dias p/Prot.3923930Iif(SEE->EE_XDIAPRO='','06',StrZero(Val(SEE->EE_XDIAPRO),2))
+Branco         3943940Space(1)                                                    
+Num. Sequencial3954000INCREMENTA()                                                
+Codigo Registro0010010'9'                                                         
+Brancos        0023940SPACE(393)                                                  
+Num. Sequencial3954000INCREMENTA()                                                

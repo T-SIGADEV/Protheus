@@ -1,0 +1,53 @@
+CGC            001014 SUBSTR(SM0->M0_CGC,1,14)                                    
+TIPO PAGTO.    015016 "30"                                                        
+IDENTIFICACAO  017035 "0000000000000000000"                                       
+BRANCO         036036 " "                                                         
+DATA GRAVACAO  037042 GRAVADATA(dDataBase,.F.,2)                                  
+NOME EMPRESA   043072 SUBSTR(SM0->M0_NOMECOM,1,30)                                
+FINALIDADE     073102 "PAGAMENTO SALARIOS            "                            
+LOGRADOURO     103132 SUBS(SM0->M0_ENDCOB,1,30)                                   
+NUMERO         133137 "00000"                                                     
+CIDADE         138157 SUBS(SM0->M0_CIDCOB,1,20)                                   
+CEP            158162 SUBS(SM0->M0_CEPCOB,1,5)                                    
+ESTADO         163164 SM0->M0_ESTCOB                                              
+COMPL. CEP     165167 RIGHT(SM0->M0_CEPCOB,3)                                     
+MOEDA          168170 "REA"                                                       
+BRANCOS        171224 SPACE(54)                                                   
+CODIGO DO BANCO225227 "341"                                                       
+COD.APLICACAO  228230 "SPI"                                                       
+COD.USUARIO    231235 "U0368"                                                     
+BRANCOS        236240 SPACE(5)                                                    
+NUMERO ORDEM   241242 "01"                                                        
+SEQUENCIAL     243250 "00000001"                                                  
+CGC            001014 SUBS(SM0->M0_CGC,1,14)                                      
+FORMA PAGTO.   015016 "01"                                                        
+CODIGO EMPRRESA017029 "AAAA000CCCCCD"                                             
+DATA DO CREDITO030035 GRAVADATA(dDataPgto,.f.,2)                                  
+BCO.FAVORECIDO 036038 SUBS(SRA->RA_BCDEPSA,1,3)                                   
+AGENCIA FAV.   039042 SUBS(SRA->RA_BCDEPSA,4,4)                                   
+CONTA CORRENTE 043052 SRA->RA_CTDEPSA                                             
+NOME           053082 SRA->RA_NOME                                                
+ENDERECO       083112 SRA->RA_ENDEREC                                             
+NUMERO         113117 "00000"                                                     
+COMPLEMENTO    118132 SUBS(SRA->RA_COMPLEM,1,15)                                  
+CIDADE         133152 SUBS(SRA->RA_MUNICIP,1,20)                                  
+BAIRRO         153167 SUBS(SRA->RA_BAIRRO,1,15)                                   
+CEP            168172 SUBS(SRA->RA_CEP,1,5)                                       
+ESTADO         173174 SRA->RA_ESTADO                                              
+NUMERO DOC.    175183 "999999999"                                                 
+NUMERO PAGTO   184189 "999999"                                                    
+BRANCOS        190206 SPACE(17)                                                   
+EMISSAO AVISO  207207 "X"                                                         
+BRANCOS        208222 SPACE(15)                                                   
+COMPL. CEP     223225 RIGHT(SRA->RA_CEP,3)                                        
+VALOR          226240 nValor                                                      
+NUMERO ORDEM   241242 "01"                                                        
+SEQUNECIAL     243250 INCREMENTA()                                                
+CGC            001014 SUBS(SM0->M0_CGC,1,14)                                      
+ZEROS          015016 "00"                                                        
+IDENTIFICACAO  017035 "9999999999999999999"                                       
+VALOR TOTAL    036050 nTotal                                                      
+QUANT. FUNC.   051058 nTotFunc                                                    
+BRANCOS        059240 SPACE(182)                                                  
+NUM. ORDEM     241242 "01"                                                        
+SEQUENCIAL     243250 INCREMENTA()                                                

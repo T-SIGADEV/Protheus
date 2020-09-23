@@ -1,0 +1,106 @@
+ACodigo Banco   0010030"341"                                                       
+ALote de Servico0040070"0000"                                                      
+ARegistro Header0080080"0"                                                         
+AFiller         0090140SPACE(06)                                                   
+ALay-Out Arquivo0150170"080"                                                       
+ATipo Inscricao 0180180"2"                                                         
+ACGC Empresa    0190320SUBSTR(SM0->M0_CGC,1,14)                                    
+AFiller         0330520SPACE(20)                                                   
+ANum. Agencia   0530570SubStr(Alltrim(GetMv("MV_GPEBANC")),1,5)                    
+ACompl. Registro0580580" "                                                         
+ANum. C/C.      0590700SubStr(Alltrim(GetMv("MV_GPEBANC")),7,12)                   
+ACompl. Registro0710710" "                                                         
+ADAC da Agencia 0720720SubStr(Alltrim(GetMv("MV_GPEBANC")),19,1)                   
+ANome da Empresa0731020SUBSTR(SM0->M0_NOMECOM,1,30)                                
+ANome do Banco  1031320"BANCO ITAU S/A                "                            
+AFiller         1331420SPACE(10)                                                   
+ACodigo Rem/Ret 1431430"1"                                                         
+AData da Geracao1441510GRAVADATA(DDATABASE,.F.,5)                                  
+AHora da Geracao1521570SUBS(TIME(),1,2)+SUBS(TIME(),4,2)+SUBS(TIME(),7,2)          
+ANº Sequencial  1581660"         "                                                 
+ADensidade Grav.1671710"00000"                                                     
+AFiller         1722400SPACE(69)                                                   
+BCodigo Banco   0010030"341"                                                       
+BLote de Servico0040070"0001"                                                      
+BRegistro Lote  0080080"1"                                                         
+BTipo Operacao  0090090"C"                                                         
+BTipo do Pgto.  0100110"30"                                                        
+BForma do Pgto. 0120130"01"                                                        
+BLay-Out Arquivo0140160"040"                                                       
+BBrancos        0170170Space(1)                                                    
+BTipo Inscricao 0180180"2"                                                         
+BInsc.Numero    0190320SUBSTR(SM0->M0_CGC,1,14)                                    
+BBrancos        0330520Space(20)                                                   
+BAgencia        0530570SubStr(Alltrim(GetMv("MV_GPEBANC")),1,5)                    
+BBrancos        0580580Space(1)                                                    
+BConta          0590700SubStr(Alltrim(GetMv("MV_GPEBANC")),7,12)                   
+BBrancos        0710710Space(1)                                                    
+BDAC            0720720SubStr(Alltrim(GetMv("MV_GPEBANC")),19,1)                   
+BNome da Empresa0731020SUBSTR(SM0->M0_NOMECOM,1,30)                                
+BFinalidade Lote1031320Space(30)                                                   
+BHistorico de CC1331420Space(10)                                                   
+BEnd.da Empresa 1431720SUBSTR(SM0->M0_ENDCOB,1,30)                                 
+BNumero         1731770SPACE(5)                                                    
+BComplemento    1781920"              "                                            
+BCidade         1932120"POUSO ALEGRE        "                                      
+BCEP            2132200"37550000"                                                  
+BEstado         2212220"MG"                                                        
+BBrancos        2232300Space(8)                                                    
+BOcorrencias    2312400Space(10)                                                   
+DCodigo Banco   0010030"341"                                                       
+DLote de Servico0040070"0001"                                                      
+DTrailer Lote   0080080"5"                                                         
+DFiller         0090170SPACE(09)                                                   
+DQtde Registros 0180230M->NSEQ+2                                                   
+DSomatoria Valor0240410STRZERO(NTOTAL,18)                                          
+DQtde de Moeda  0420590STRZERO(0,18)                                               
+DFiller         0602300SPACE(171)                                                  
+DOcorrencias    2312400Space(10)                                                   
+FCodigo Banco   0010030"341"                                                       
+FLote de Servico0040070"9999"                                                      
+FTrailer Arquivo0080080"9"                                                         
+FFiller         0090170SPACE(09)                                                   
+FQtde. Lotes    0180230"000001"                                                    
+FQtde. Registros0240290M->NSEQ+4                                                   
+FFiller         0302400SPACE(211)                                                  
+GCodigo Banco   0010030"341"                                                       
+GLote de Servico0040070"0001"                                                      
+GReg. Detalhe   0080080"3"                                                         
+GN§ Sequencial  0090130INCREMENTA()-1                                              
+GSegmento       0140140"A"                                                         
+GTipo Movimento 0150170"000"                                                       
+GZeros          0180200"000"                                                       
+GBco Favorecido 0210230SUBSTR(SRA->RA_BCDEPSA,1,3)                                 
+GZero           0240240"0"                                                         
+GNum. Agencia   0250280SUBSTR(SRA->RA_BCDEPSA,4,4)                                 
+GCompl. Registro0290290SPACE(01)                                                   
+GCompl. Registro0300360"0000000"                                                   
+GNum. C/C       0370410SUBSTR(SRA->RA_CTDEPSA,1,5)                                 
+GCompl. Registro0420420SPACE(01)                                                   
+GDAC Agencia    0430430SUBSTR(SRA->RA_CTDEPSA,7,1)                                 
+GNome Favorecido0440730SUBS(SRA->RA_NOME,1,30)                                     
+GNum. Documento 0740930SPACE(20)                                                   
+GData Lancamento0941010GRAVADATA(M->DDATAPGTO,.F.,5)                               
+GTipo da Moeda  1021040"REA"                                                       
+GCompl. Registro1051190"000000000000000"                                           
+GValor Creditar 1201342STRZERO(NVALOR,15)                                          
+GN§ Dcto. Bco.  1351540SPACE(20)                                                   
+GData Real      1551620SPACE(08)                                                   
+GValor Real     1631772"000000000000000"                                           
+GInfor.Complem  1781970SPACE(20)                                                   
+GOutras Inform. 1982290SPACE(6)+SRA->RA_CIC+SPACE(15)                              
+GAviso Favorec. 2302300"0"                                                         
+GOcorrencias    2312400Space(10)                                                   
+
+
+
+
+
+
+
+
+
+
+
+
+

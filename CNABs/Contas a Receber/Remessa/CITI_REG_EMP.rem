@@ -1,0 +1,58 @@
+ID.REGISTRO    00100100                                                           
+ID.ARQUIVO     00200201                                                           
+ID.ARQ.EXTENSO 003009 "REMESSA"                                                   
+ID.TIPO SERVICO010011001                                                          
+ID.SERV.EXTENSO012026 "COBRANCA"                                                  
+ID.EMPRESA     027046 "06440406440400160314"                                      
+NOME DA EMPRESA047076 SUBSTR(SM0->M0_NOMECOM,1,30)                                
+CODIGO DO BANCO0770790745                                                         
+NOME DO BANCO  080094 "CITIBANK"                                                  
+DATA GRAVACAO  0951000GRAVADATA(dDATABASE,.F.)                                    
+DENSIDADE GRAV.101105 "01600"                                                     
+UNIDADE DENSID.106108 "BPI"                                                       
+UNID.VOL.FISICO109114 SPACE(06)                                                   
+IDENTIF.IMPRESS115394 SPACE(280)                                                  
+NR SEQUENCIAL  3954000000001                                                      
+ID.REG.DETALHE 00100101                                                           
+ID.TP.INSCRICAO002003002                                                          
+NR.INSCRICAO   0040170SUBSTR(SM0->M0_CGC,1,14)                                    
+ID.EMPRESA     018037 "06440406440400160314"                                      
+USO DA EMPRESA 038062 SE1->E1_IDCNAB                                              
+ID.ESPEC.TITULO063064000                                                          
+NOSSO NUMERO   0650760SUBSTR(SE1->E1_NUMBCO,1,12)                                 
+BRANCOS        077082 SPACE(06)                                                   
+USO DO BANCO   0831040REPLICATE("0",22)                                           
+USO DO BANCO   1051070REPLICATE("0",3)                                            
+CARTEIRA       10810802                                                           
+COD.OCORRENCIA 109110001                                                          
+SEU NUMERO     111120 SE1->(SUBS(E1_NUM,2,8)+SUBS(STRZ(VAL(E1_PARCELA),3),2,2))   
+DATA VENCIMENTO1211260GRAVADATA(SE1->E1_VENCREA,.F.)                              
+VALOR DO TITULO1271392STRZERO((SE1->(E1_SALDO+E1_SDACRES-E1_SDDECRE)*100),13)     
+CODIGO DO BANCO1401420745                                                         
+PRF AGENCIA COB1431470REPLICATE("0",5)                                            
+TIPO DE EMISSAO148149007                                                          
+ACEITE         150150 "N"                                                         
+DATA EMISSAO   1511560GRAVADATA(SE1->E1_EMISSAO,.F.)                              
+INSTRUCAO 1    1571580SPACE(02)                                                   
+INSTRUCAO 2    1591600Iif(SEE->EE_XDIAPRO='','  ',StrZero(Val(SEE->EE_XDIAPRO),2))
+JUROS POR DIA  1611732REPLICATE("0",13)                                           
+DT.LIMITE DESCT1741790000000                                                      
+VALOR DESCONTO 1801922REPLICATE("0",13)                                           
+VALOR IOF      1932052REPLICATE("0",13)                                           
+VALOR ABATIMENT2062182REPLICATE("0",13)                                           
+TIPO INSCRICAO 2192200IIF(SUBSTR(SA1->A1_PESSOA,1,1)="F" , 01 , 02 )              
+NR.INSCRICAO   2212340STRZERO(VAL(SA1->A1_CGC),14)                                
+NOME SACADO    235274 U_RetCharE(SA1->A1_NOME,1,1)                                
+ENDERECO       275314 U_RetCharE(SA1->A1_END,1,1)                                 
+BAIRRO         315326 U_RetCharE(SA1->A1_BAIRRO,1,1)                              
+CEP            327334 SUBSTR(SA1->A1_CEP,1,8)                                     
+CIDADE         335349 U_RetCharE(SA1->A1_MUN,1,1)                                 
+ESTADO         350351 SUBSTR(SA1->A1_EST,1,2)                                     
+SACADO/AVALISTA352385 SPACE(34)                                                   
+Data de Mora   386391 SPACE(06)                                                   
+BRANCOS        392393 SPACE(02)                                                   
+CODIGO MOEDA   39439409                                                           
+SEQUENCIAL     395400 INCREMENTA()                                                
+ID.REGISTRO    00100109                                                           
+BRANCOS        002394 SPACE(393)                                                  
+SEQUENCIAL     3954000INCREMENTA()                                                

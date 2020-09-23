@@ -1,0 +1,70 @@
+Codigo Registro00100100                                                           
+Codigo Arquivo 00200201                                                           
+Literal Arquivo0030090"REMESSA"                                                   
+Codigo Servico 010011001                                                          
+Literal Servico0120260PADR("COBRANCA",15)                                         
+Codigo Cliente 0270310Padl(ALLTRIM(StrTran(SA6->A6_AGENCIA,"-","")),05,"0")       
+Codigo Cliente 0320400Padl(ALLTRIM(StrTran(SA6->A6_NUMCON,"-","")),09,"0")        
+Brancos        0410460SPACE(6)                                                    
+Nome Cliente   0470760UPPER(SUBSTR(SM0->M0_NOMECOM,1,30))                         
+Codigo Banco   0770790"422"                                                       
+Nome Banco     0800940PADR("BANCO SAFRA",15)                                      
+Data Gravacao  0951000GRAVADATA(dDataBase,.F.)                                    
+Brancos        1013910SPACE(291)                                                  
+Num Arquivo    3923940RIGHT(SEE->EE_ULTDSK,3)                                     
+Numero Sequenc.3954000"000001"                                                    
+Codigo Registro00100101                                                           
+Codigo Inscr   0020030"02"                                                        
+Numero Inscr   0040170SM0->M0_CGC                                                 
+Codigo Cliente 0180220Padl(ALLTRIM(StrTran(SA6->A6_AGENCIA,"-","")),05,"0")       
+Codigo Cliente 0230310Padl(ALLTRIM(StrTran(SA6->A6_NUMCON,"-","")),09,"0")        
+Brancos        0320370SPACE(6)                                                    
+Uso Empresa    0380500SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO    
+Uso Empresa    0510620Tabela("17",SUBSTR(SE1->E1_TIPO,1,2))                       
+Nosso Numero   0630710SE1->E1_NUMBCO                                              
+Brancos        0720770SPACE(07)                                                   
+Brancos        0780780SPACE(1)                                                    
+Brancos        0790790SPACE(1)                                                    
+Brancos        0800850SPACE(6)                                                    
+Brancos        0861010SPACE(16)                                                   
+Codigo IOF     1021020"0"                                                         
+Codigo Moeda   1031040"00"                                                        
+Brancos        1051050SPACE(1)                                                    
+Terceira Instru1061070"00"                                                        
+Cod Cart       1081080Iif(SE1->E1_SITUACA=="4" , "2" , "1")                       
+Cod Ocorr      1091100"01"                                                        
+Seu Numero     1111200SE1->E1_IDCNAB                                              
+Vencimento     1211260GRAVADATA(SE1->E1_VENCREA,.F.)                              
+Valor          1271392StrZero((SE1->(E1_SALDO+E1_SDACRES-E1_SDDECRE)*100),13)     
+Banco Cobrador 1401420Iif(SE1->E1_SITUACA=="4" ,"237" , "422")                    
+Ag.Cobradora   1431470"00000"                                                     
+Codigo Especie 1481490"01"                                                        
+Aceite         1501500"A"                                                         
+Data Emissao   1511560GRAVADATA(SE1->E1_EMISSAO,.F.)                              
+Instrucao 01   1571580"01"                                                        
+Instrucao 02   1591600"00"                                                        
+Juros          1611732StrZero((SE1->E1_VALJUR*100),13)                            
+Desconto data  1741790000000                                                      
+Valor desconto 1801922StrZero(0,13)                                               
+IOF            1932052StrZero(0,13)                                               
+Abatimento     2062180StrZero(0,13)                                               
+Codigo Inscrica2192200Iif(Right(SA1->A1_CGC,2)="  " , 01 , 02)                    
+Nro Inscricao  2212340PadL(AllTrim(SA1->A1_CGC),14,"0")                           
+Nome           2352740SA1->A1_NOME                                                
+Logradouro     2753140PadR(Iif(SA1->A1_ENDCOB=" ", SA1->A1_END,SA1->A1_ENDCOB),40)
+Bairro         3153240Iif(SA1->A1_BAICOB=" " , SA1->A1_BAIRRO , SA1->A1_BAICOB)   
+BANCOS         3253260SPACE(2)                                                    
+CEP            3273340Iif(SA1->A1_ENDCOB=" " , SA1->A1_CEP , SA1->A1_CEPCOB)      
+Cidade         3353490Iif(SA1->A1_ENDCOB=" " , SA1->A1_MUN , SA1->A1_MUNCOB)      
+Estado         3503510Iif(SA1->A1_ENDCOB=" " , SA1->A1_EST , SA1->A1_ESTCOB)      
+Sacad/Avalista 3523810Formula("CSF")                                              
+Brancos        3823880SPACE(7)                                                    
+Banco Emitente 3893910422                                                         
+Num Arquivo    3923940Right(SEE->EE_ULTDSK,3)                                     
+Nro Sequencial 3954000Incrementa()                                                
+Codigo Registro00100109                                                           
+Brancos        0023680SPACE(367)                                                  
+Quantidade     3693760Incrementa()-2                                              
+Valor Total    3773912STRZERO(INT(SOMAVALOR()),15)                                
+Num Arq.       3923940RIGHT(SEE->EE_ULTDSK,3)                                     
+Num Reg.       3954000Incrementa()                                                
