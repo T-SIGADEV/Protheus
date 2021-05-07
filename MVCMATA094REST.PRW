@@ -241,3 +241,4 @@ STATIC cFieldSC7 := ''
     EndIF
 */
 Return lRet
+
