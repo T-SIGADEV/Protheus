@@ -38,7 +38,7 @@ Else
 Endif
 
 aadd(aSrv, { "IP/Host","Porta","Ambiente","Ativo","Observacao" } )
-Aadd(aLogins, { "IDThread","Login Protheus", "EstaÁ„o", "Ambiente", "Data/Hora Conex„o", "Tempo", "Rotina", "Tipo da thread", "Ambiente/Server","Observacoes" } )
+Aadd(aLogins, { "IDThread","Login Protheus", "Esta√ß√£o", "Ambiente", "Data/Hora Conex√£o", "Tempo", "Rotina", "Tipo da thread", "Ambiente/Server","Observacoes" } )
 
 // ip, porta, nome do ambiente, observacao, se lista os usuarios conectados
 aadd(aServers, { "192.168.1.250",12001,"Monitor"       ,"Master"     ,.F.})
@@ -82,8 +82,6 @@ If Empty(__cUSerID)
 	cUserName  := 'Administrador'
 	__cUSerID  := '000000'
 Endif
-PtInternal( 1, "PbMonitor - Emp: " + cEmpAnt )
-TcInternal( 1, "PbMonitor - Emp: " + cEmpAnt )
 
 aSecao := {}
 aAdd(aSecao, {'ThreadId', cValToChar(ThreadId()) } )
@@ -128,7 +126,7 @@ cBody += "<P>"
 
 
 // coloca aqui sua funcao de envio de e-mails
-U_SduMandaEmail( "alessandro@farias.net.br"/*cPara*/, "alessandro.farias@pernambucoconstrutora.com.br"/*cCopia*/, ""/*cConhCopia*/, "Monitoramento Protheus"/*cAssunto*/, Nil/*_cDe*/, cBody/*cTexto*/, .T./*lHtml*/,Nil/*cFile*/,.F./*lConfMaiRead*/,Nil/*aPWD*/,.F./*lJob*/ )
+U_SduMandaEmail( "alessandro@farias.net.br"/*cPara*/, "amjgfarias@gmail.com"/*cCopia*/, ""/*cConhCopia*/, "Monitoramento Protheus"/*cAssunto*/, Nil/*_cDe*/, cBody/*cTexto*/, .T./*lHtml*/,Nil/*cFile*/,.F./*lConfMaiRead*/,Nil/*aPWD*/,.F./*lJob*/ )
 
 Return
 
