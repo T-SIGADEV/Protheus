@@ -14,7 +14,6 @@ For nI:=1 To Len(aPastas)
 	For nJ:=1 To Len(aDir)
 		If ! 'copy' $ lower(aDir[nJ][01])
 			ConOut( cOrigem+aPastas[nI]+"\"+aDir[nJ][01] + " -> " + lower(dDestino+"\"+aPastas[nI]+aDir[nJ][01]) )
-			PtInternal(1,cOrigem+aPastas[nI]+"\"+aDir[nJ][01] + " -> " + lower(dDestino+"\"+aPastas[nI]+aDir[nJ][01]) )
 			remake( cOrigem+aPastas[nI]+"\"+aDir[nJ][01], lower(dDestino+"\"+aPastas[nI]+aDir[nJ][01]) )
 		Endif
 	Next nJ
