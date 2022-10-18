@@ -1,0 +1,204 @@
+#include "totvs.ch"
+
+namespace tsigadev.generic.utils
+
+/*/{Protheus.doc} JWT
+Classe responsável pela criação e verificação de JWT (JSON Web Token).
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+@see    https://jwt.io/
+@see    https://datatracker.ietf.org/doc/html/rfc7519
+/*/
+Class JWT
+
+	Protected Data oHeader     as object
+	Protected Data nHMACType   as integer
+	Protected Data cPrivateKey as character
+	Protected Data cPhrase     as character
+
+	Public    Method New() Constructor
+	Public    Method SetAlgorithm()  as logical
+	Public    Method SetPrivateKey() as logical
+	Public    Method GetEncoded()    as character
+	Protected Method SignHS()        as character
+	Protected Method SignES()        as character
+	Public    Method GetDecoded()    as character
+	Protected Method VerifyHS()      as character
+	Protected Method VerifyES()      as character
+
+EndClass
+
+/*/{Protheus.doc} New
+Método constutor.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method New(cAlgorithm as character, cPrivateKey as character, cPhrase as character) Class JWT
+
+// Header de assinatura.
+self:oHeader := JsonObject():New()
+self:oHeader["typ"] := "JWT"
+
+// Algoritmo usado na assinatura do JWT.
+self:SetAlgorithm(cAlgorithm)
+
+// Chave usada na assinatura do JWT.
+self:SetPrivateKey(cPrivateKey, cPhrase)
+
+Return self
+
+/*/{Protheus.doc} SetAlgorithm
+Método para definir o algoritmo usado na assinatura.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method SetAlgorithm(cAlgorithm as character) as logical Class JWT
+
+Local lRet := .T. as logical
+
+// Número do algoritmo usado no HMAC.
+// Fonte: https://tdn.totvs.com/display/tec/HMAC
+If cAlgorithm = "HS"
+	If cAlgorithm == "HS256"
+		self:nHMACType := 5
+	ElseIf cAlgorithm == "HS512"
+		self:nHMACType := 7
+	Else
+		lRet := .F.
+	Endif
+// ElseIf cAlgorithm = "ES"
+// ... (desenvolver)
+Else
+	lRet := .F.
+Endif
+
+// Header das requisições.
+If lRet
+	self:oHeader["alg"] := cAlgorithm
+Else
+	self:nHMACType := nil
+	Help(,, "ClassFWT",, "Algoritmo inválido: " + cAlgorithm, 1, 0
+Endif
+
+Return lRet
+
+/*/{Protheus.doc} SetPrivateKey
+Método para definir a chave usada na assinatura.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method SetPrivateKey(cPrivateKey as character, cPhrase as character) as logical Class JWT
+self:cPrivateKey := cPrivateKey
+self:cPhrase     := cPhrase
+Return .T.
+
+/*/{Protheus.doc} GetEncoded
+Método para montar o JWT.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method GetEncoded(cPayload as character) as character Class JWT
+
+Local cJWT as character
+
+// Monta o JWT.
+If self:oHeader["alg"] = "HS"
+	cJWT := self:SignHS(cPayload)
+ElseIf self:oHeader["alg"] = "ES"
+	cJWT := self:SignES(cPayload)
+Endif
+
+Return cJWT
+
+/*/{Protheus.doc} SignHS
+Método para montar o JWT usando o método HMAC com SHA-2.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method SignHS(cPayload as character) as character Class JWT
+
+Local cHeader64  as character
+Local cPayload64 as character
+Local cSign      as character
+
+cHeader64  := StrTran(Encode64(self:oHeader:toJson()), "=", "")
+cPayload64 := StrTran(Encode64(cPayload), "=", "")
+cSign      := StrTran(Encode64(HMAC(cHeader64 + "." + cPayload64, self:cPrivateKey, self:nHMACType, 1)), "=", "")
+
+Return cHeader64 + "." + cPayload64 + "." + cSign
+
+/*/{Protheus.doc} SignES
+Método para montar o JWT usando o método ECDSA.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method SignES(cPayload as character) as character Class JWT
+
+Local cResult as character
+
+// Desenvolver.
+
+Return cResult
+
+/*/{Protheus.doc} GetDecoded
+Método verificar e decodificar o JWT.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method GetDecoded(cEncoded as character) as character Class JWT
+
+Local cDecoded  as character
+Local oHeader   as object
+Local aEncoded  := StrToKarr2(cEncoded, ".") as array
+
+If len(aEncoded) = 3
+	oHeader := JsonObject():New()
+	oHeader:FromJson(Decode64(aEncoded[1]))
+	If oHeader["alg"] = "HS"
+		cDecoded := self:VerifyHS(aEncoded)
+	ElseIf oHeader["alg"] = "ES"
+		cDecoded := self:VerifyES(cEncoded)
+	Endif
+Endif
+
+Return cDecoded
+
+/*/{Protheus.doc} VerifyHS
+Método para verificar o JWT usando o método HMAC com SHA-2.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method VerifyHS(aEncoded as array) as character Class JWT
+
+Local cDecoded   as character
+Local cHeader64  := aEncoded[1] as character
+Local cPayload64 := aEncoded[2] as character
+
+// Se a assinatura bater, retorna o payload decodificado.
+If (aEncoded[3] == StrTran(Encode64(HMAC(cHeader64 + "." + cPayload64, self:cPrivateKey, self:nHMACType, 1)), "=", ""))
+	cDecoded := Decode64(cPayload64)
+Endif
+
+Return cDecoded
+
+/*/{Protheus.doc} VerifyES
+Método para verificar o JWT usando o método ECDSA.
+
+@author Felipe Raposo
+@since  Fevereiro/2022
+/*/
+Method VerifyES(cEncoded as character) as character Class JWT
+
+Local cDecoded as character
+// Desenvolver.
+
+Return cDecoded
