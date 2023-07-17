@@ -1,0 +1,91 @@
+#Include "Protheus.Ch"
+#Include 'FWMVCDEF.CH'
+
+
+/*/{Protheus.doc} MTA010MVC
+  Gravação em MVC Cadastro de Produto x Complemento x Indicador
+  @type  Função
+  @author Michael Maximino de Castro
+  @since 14/06/2023
+  /*/
+User Function MTA010MVC()
+
+Local cCodSB1 := "PCVNRTX4090    "
+
+//Posiciono no registro que será feito a alteração
+DbSelectArea("SB1")
+DbSetOrder(1)
+DbSeek(FWxFilial("SB1") + cCodSB1)
+
+//Pegando o modelo de dados, setando a operação de inclusão
+oModel := FWLoadModel("MATA010")
+oModel:SetOperation(MODEL_OPERATION_UPDATE)
+oModel:Activate()
+   
+//Pegando o model e setando os campos
+oSB1Mod := oModel:GetModel("SB1MASTER")
+oSB1Mod:SetValue("B1_DESC"   , "PLACA DE VIDEO NVIDIA RTX 4090"     ) 
+oSB1Mod:SetValue("B1_TIPO"   , "PA"     ) 
+oSB1Mod:SetValue("B1_UM"     , "CX"       ) 
+oSB1Mod:SetValue("B1_LOCPAD" , "019"   ) 
+ 
+//Setando o complemento do produto
+oSB5Mod := oModel:GetModel("SB5DETAIL")
+If oSB5Mod != Nil
+    oSB5Mod:SetValue("B5_CEME"   , "NVIDIA RTX 4090"     )
+EndIf
+
+//Setando o indicador de produto
+oSBZMod := oModel:GetModel("SBZDETAIL")
+If oSBZMod != Nil
+	oSBZMod:AddLine() //Adiciona uma nova linha na SBZ
+    oSBZMod:SetValue("BZ_FILIAL"   , FWxFilial("SBZ")     )
+    oSBZMod:SetValue("BZ_LOCPAD"   , "001"     ) 
+EndIf
+   
+//Se conseguir validar as informações
+If oModel:VldData()
+       
+    //Tenta realizar o Commit
+    If oModel:CommitData()
+        lOk := .T.
+           
+    //Se não deu certo, altera a variável para false
+    Else
+        lOk := .F.
+    EndIf
+       
+//Se não conseguir validar as informações, altera a variável para false
+Else
+    lOk := .F.
+EndIf
+   
+//Se não deu certo a inclusão, mostra a mensagem de erro
+If ! lOk
+    //Busca o Erro do Modelo de Dados
+    aErro := oModel:GetErrorMessage()
+       
+    //Monta o Texto que será mostrado na tela
+    cMessage := "Id do formulário de origem:"  + ' [' + cValToChar(aErro[01]) + '], '
+    cMessage += "Id do campo de origem: "      + ' [' + cValToChar(aErro[02]) + '], '
+    cMessage += "Id do formulário de erro: "   + ' [' + cValToChar(aErro[03]) + '], '
+    cMessage += "Id do campo de erro: "        + ' [' + cValToChar(aErro[04]) + '], '
+    cMessage += "Id do erro: "                 + ' [' + cValToChar(aErro[05]) + '], '
+    cMessage += "Mensagem do erro: "           + ' [' + cValToChar(aErro[06]) + '], '
+    cMessage += "Mensagem da solução: "        + ' [' + cValToChar(aErro[07]) + '], '
+    cMessage += "Valor atribuído: "            + ' [' + cValToChar(aErro[08]) + '], '
+    cMessage += "Valor anterior: "             + ' [' + cValToChar(aErro[09]) + ']'
+     
+    //Mostra mensagem de erro
+    lRet := .F.
+    ConOut("Erro: " + cMessage)
+Else
+    lRet := .T.
+    ConOut("Produto incluido!")
+EndIf
+   
+//Desativa o modelo de dados
+oModel:DeActivate()
+
+
+Return 
